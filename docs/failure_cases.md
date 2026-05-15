@@ -53,6 +53,48 @@ The same policy applies to duplicate keys in GSTR-2B (`duplicate_in_gstr2b`).
 
 ---
 
+## Supplier Risk Failures (Sprint 3)
+
+| Case | Description | Sprint |
+|---|---|---|
+| Inactive GSTIN supplier | ITC claim legally invalid — GSTIN cancelled by department | Sprint 3 ✓ |
+| Suspended GSTIN supplier | GSTIN deactivated — CA must not file ITC from this supplier | Sprint 3 ✓ |
+| Non-filing supplier | Supplier didn't file GSTR-1 — ITC will never appear in GSTR-2B | Sprint 3 ✓ |
+| Irregular filer supplier | Returns filed late — ITC may appear in wrong tax period | Sprint 3 ✓ |
+| Unknown supplier (not in master) | Cannot verify GSTIN status — score +35, Medium risk by default | Sprint 3 ✓ |
+| Non-filer + missing in GSTR-2B | Compound risk — ITC not only unfiled but also absent from 2B | Sprint 3 ✓ |
+| Score overflow (>100) | Multiple factors can add to >100 — capped at 100 | Sprint 3 ✓ |
+
+### What Is Not Covered Yet
+| Case | Description | Sprint |
+|---|---|---|
+| Supplier GSTIN changed mid-year | Different GSTINs for same legal entity across periods | Sprint 4 |
+| GSTIN format validation | Check that GSTIN is 15 chars and matches state code pattern | Sprint 4 |
+| Supplier master staleness | Risk note may be outdated if master isn't refreshed regularly | Sprint 4 |
+
+---
+
+## Report Generation Failures (Sprint 4)
+
+| Case | Handled? | Description |
+|---|---|---|
+| No exception rows | ✓ | Returns header-only Excel; does not crash |
+| Unknown supplier in exceptions | ✓ | Supplier name = "Unknown Supplier"; score = +35 |
+| Missing purchase_total_itc (NaN) | ✓ | `calculate_itc_at_risk` returns 0.0 safely |
+| Amount mismatch with one side blank | ✓ | Treats NaN as 0.0 before subtraction |
+| Matched invoice from high-risk supplier | ✓ | Included in exceptions; ITC = purchase_total_itc |
+| `extra_in_2b` row (no purchase ITC) | ✓ | ITC at risk = 0.0; action = "Check whether invoice is missing from books" |
+| Reports dir missing | ✓ | `mkdir(parents=True, exist_ok=True)` creates it |
+
+### What Is Not Covered Yet
+| Case | Description | Sprint |
+|---|---|---|
+| CA annotates the Excel and tool re-reads it | No re-read / review workflow yet | Sprint 5 |
+| Duplicate sheet name on same date | Re-running overwrites — no versioning | Sprint 5 |
+| Report with 1000+ rows | Column widths are fixed — may truncate long text | Sprint 5 |
+
+---
+
 ## Evaluation Failures
 
 | Case | Description | Sprint |

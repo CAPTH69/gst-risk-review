@@ -127,7 +127,100 @@ This prevents a false alarm: a CA should see "you have a duplicate entry" — no
 
 ---
 
-## Next Sprint Preview: Sprint 3 — Supplier Risk Scoring
+## Sprint 3: Supplier Risk Scoring
+
+Each reconciled invoice is scored against the supplier's GSTIN status and return-filing behavior.
+
+### How Risk Is Calculated
+
+Risk factors are additive. The final score is capped at 100.
+
+| Signal | Points |
+|---|---|
+| Inactive GSTIN | +75 |
+| Suspended GSTIN | +75 |
+| Non-Filer supplier | +75 |
+| Irregular Filer | +40 |
+| Invoice missing in GSTR-2B | +40 |
+| Amount mismatch | +35 |
+| Duplicate invoice in purchase register | +75 |
+| Invoice only in GSTR-2B | +10 |
+| Supplier not found in master | +35 |
+
+### Risk Levels
+
+| Score | Level |
+|---|---|
+| 0–30 | Low |
+| 31–70 | Medium |
+| 71–100 | High |
+
+### Sample Data Output
+
+```
+Reconciliation Summary:
+  matched: 16
+  missing_in_2b: 2
+  extra_in_2b: 1
+  amount_mismatch: 1
+  duplicate_in_purchase: 1
+
+Supplier Risk Summary:
+  High: 7
+  Medium: 2
+  Low: 12
+```
+
+---
+
+## Sprint 4: Exception Report (Excel Output)
+
+After reconciliation and risk scoring, the tool generates a CA-readable Excel file.
+
+### What the Report Contains
+
+Only exception rows are included — invoices where something needs CA attention:
+- Any reconciliation status other than `matched`
+- Any `matched` invoice where the supplier risk is Medium or High
+
+Each row includes 12 columns:
+
+| Column | What It Shows |
+|---|---|
+| Invoice No | Invoice identifier |
+| Supplier GSTIN | Supplier's GST registration number |
+| Supplier Name | Supplier's name from the master |
+| Reconciliation Status | matched / missing_in_2b / amount_mismatch / etc. |
+| Mismatch Reason | Why it didn't match (if applicable) |
+| Supplier Risk Level | High / Medium / Low |
+| Supplier Risk Score | Numeric score (0–100) |
+| Supplier Risk Reasons | Human-readable risk explanation |
+| Purchase ITC | ITC claimed in purchase register |
+| GSTR-2B ITC | ITC as per GSTR-2B |
+| ITC At Risk | Estimated rupee amount at risk |
+| Suggested CA Action | "Review before filing", "Verify supporting documents", etc. |
+
+### Excel Formatting
+- Bold header row
+- Frozen top row (scroll without losing headers)
+- Autofilter on all columns
+- Row colour: red = High risk, amber = Medium risk
+- Sensible column widths
+
+### Where the Report Is Saved
+```
+reports/exception_report_YYYYMMDD.xlsx
+```
+
+### Sample Output
+```
+Exception report generated: .../reports/exception_report_20260516.xlsx
+  Exception rows: 9
+```
+
+---
+
+## Next Sprint Preview: Sprint 5 — CA Review Workflow
 
 Sprint 2 will:
 - Normalize invoice numbers and dates (handle whitespace, format differences)
