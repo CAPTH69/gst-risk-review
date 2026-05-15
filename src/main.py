@@ -1,17 +1,26 @@
 """
 main.py - Entry point for GST Risk Review.
 
-Loads all three sample CSV files, validates columns, cleans data,
-runs invoice reconciliation, scores supplier risk, and prints a summary.
+Normal mode (no flags):
+  Loads all three sample CSV files, validates columns, cleans data,
+  runs invoice reconciliation, scores supplier risk, and writes an
+  Excel exception report.
+
+Review mode (--review FILE):
+  Reads a CA-reviewed exception report Excel file and prints a filing
+  recommendation summary.
 """
 
+import argparse
 from pathlib import Path
+
 from data_loader import load_purchase_register, load_gstr2b, load_supplier_master
 from validator import validate_purchase_register, validate_gstr2b, validate_supplier_master
 from cleaner import clean_purchase_register, clean_gstr2b
 from reconciler import reconcile_invoices
 from risk_scorer import add_supplier_risk
 from report_writer import prepare_exception_report, generate_report_filename, write_exception_report
+from review_processor import process_reviewed_report, print_review_summary
 
 
 # Paths to sample data files
@@ -23,8 +32,9 @@ GSTR2B_PATH = DATA_DIR / "sample_gstr2b.csv"
 SUPPLIER_MASTER_PATH = DATA_DIR / "sample_supplier_master.csv"
 
 
-def main():
-    print("=== GST Risk Review - Sprint 4 ===\n")
+def run_normal_mode():
+    """Load, validate, clean, reconcile, score, and generate an Excel exception report."""
+    print("=== GST Risk Review - Sprint 5 ===\n")
 
     # Load all three files
     purchase_df = load_purchase_register(PURCHASE_REGISTER_PATH)
@@ -71,5 +81,24 @@ def main():
     print(f"  Exception rows: {len(report_df)}")
 
 
+def run_review_mode(report_path):
+    """Read a CA-reviewed Excel report and print a filing recommendation."""
+    summary = process_reviewed_report(report_path)
+    print_review_summary(summary)
+
+
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="GST Risk Review — pre-filing ITC risk tool for CA firms"
+    )
+    parser.add_argument(
+        "--review",
+        metavar="FILE",
+        help="Path to a CA-reviewed exception report Excel file",
+    )
+    args = parser.parse_args()
+
+    if args.review:
+        run_review_mode(args.review)
+    else:
+        run_normal_mode()

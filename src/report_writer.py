@@ -51,6 +51,8 @@ COLUMN_WIDTHS = {
     "GSTR-2B ITC": 15,
     "ITC At Risk": 15,
     "Suggested CA Action": 35,
+    "CA Review Status": 20,
+    "CA Remarks": 35,
 }
 
 
@@ -156,7 +158,7 @@ def prepare_exception_report(df):
 
     if filtered.empty:
         # Return a properly structured empty report — don't crash
-        return pd.DataFrame(columns=list(COLUMN_RENAME.values()))
+        return pd.DataFrame(columns=list(COLUMN_RENAME.values()) + ["CA Review Status", "CA Remarks"])
 
     filtered = filtered.copy()
     filtered["itc_at_risk"] = filtered.apply(calculate_itc_at_risk, axis=1)
@@ -165,6 +167,11 @@ def prepare_exception_report(df):
     # Select and rename to CA-readable columns in the defined order
     internal_cols = list(COLUMN_RENAME.keys())
     report = filtered[internal_cols].rename(columns=COLUMN_RENAME)
+
+    # Add fillable CA review columns — the CA fills these in the Excel file
+    report["CA Review Status"] = "Pending"
+    report["CA Remarks"] = ""
+
     return report
 
 
