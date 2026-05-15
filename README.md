@@ -220,10 +220,70 @@ Exception report generated: .../reports/exception_report_20260516.xlsx
 
 ---
 
-## Next Sprint Preview: Sprint 5 — CA Review Workflow
+## Sprint 6: Evaluation System
 
-Sprint 2 will:
-- Normalize invoice numbers and dates (handle whitespace, format differences)
-- Match purchase register rows against GSTR-2B rows by invoice number + GSTIN
-- Identify: missing invoices, extra invoices, amount mismatches
-- Output a structured reconciliation result as a DataFrame
+After reconciliation and risk scoring, the tool can now measure how accurate its outputs are by comparing them against a ground-truth labels file.
+
+### Why Evaluation Matters
+
+Without labels, you only know *what* the tool produced. With labels, you know *whether it was correct*. This is what separates a prototype from a tool you can trust before filing.
+
+### What `data/labels.csv` Is
+
+A human-authored ground-truth file with 20 rows (one per unique invoice in the sample data). Each row records:
+
+| Column | What It Contains |
+|---|---|
+| invoice_no | Invoice identifier (raw, as in source data) |
+| supplier_gstin | Supplier GSTIN |
+| expected_status | matched / missing_in_2b / extra_in_2b / amount_mismatch / duplicate_in_purchase |
+| expected_supplier_risk_level | Low / Medium / High |
+| expected_is_exception | True / False — should this row appear in the exception report? |
+| expected_itc_at_risk | Rupee amount of ITC at risk |
+
+### How to Run Evaluation
+
+```bash
+# From the project root
+cd src
+python main.py --evaluate
+
+# With a custom labels path
+python main.py --evaluate --labels ../data/labels.csv
+```
+
+### What the Evaluation Report Shows
+
+```
+Evaluation Report:
+  Total labelled rows: 20
+
+Accuracy:
+  Status accuracy: 100.0%
+  Risk level accuracy: 100.0%
+  Exception detection accuracy: 100.0%
+  ITC at risk accuracy: 100.0%
+
+Errors:
+  False positive exceptions: 0
+  False negative exceptions: 0
+  Missing actual rows: 0
+```
+
+### Metric Definitions
+
+| Metric | What It Measures |
+|---|---|
+| Status accuracy | % of invoices classified with the correct reconciliation status |
+| Risk level accuracy | % of invoices assigned the correct supplier risk level |
+| Exception detection accuracy | % of invoices correctly identified as exception / non-exception |
+| ITC at risk accuracy | % of invoices where ITC at risk matches the label within ₹0.01 |
+| False positive exceptions | Invoices flagged as exceptions when they should not be |
+| False negative exceptions | Invoices missed as exceptions when they should have been flagged |
+| Missing actual rows | Labels that had no matching row in the pipeline output |
+
+---
+
+## Next Sprint Preview: Sprint 7 — Streamlit Dashboard / UI
+
+Sprint 7 will add a lightweight local UI so the CA firm can upload CSVs, view the exception report, and step through the review workflow without touching the terminal.

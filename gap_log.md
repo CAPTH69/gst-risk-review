@@ -80,6 +80,43 @@ A running log of what was built, what was learned, what broke, and what comes ne
 
 ---
 
+## Sprint 6 — Evaluation System
+
+**Date:** 2026-05-16
+
+### What I Built
+- `data/labels.csv` — 20-row ground-truth file covering all unique invoice scenarios in sample data: matched/Low, matched/Medium, matched/High, missing_in_2b, extra_in_2b, amount_mismatch
+- `src/evaluator.py` — 8 functions:
+  - `load_labels` / `validate_labels` — load and check required columns
+  - `prepare_actual_results` — extract evaluation columns from enriched_df (reuses `calculate_itc_at_risk` from report_writer)
+  - `normalize_eval_key` — adds `eval_invoice_no` and `eval_supplier_gstin` using existing `clean_invoice_no` / `clean_gstin`
+  - `compare_results` — left join labels → actual on normalized keys; deduplicates actual per key first
+  - `calculate_accuracy_metrics` — returns dict with counts, accuracies (0–100, 2dp), FP/FN, missing rows
+  - `print_evaluation_report` — clean CLI output
+  - `run_evaluation` — orchestrates full pipeline and returns `(comparison_df, metrics)`
+- `tests/test_evaluator.py` — 47 tests covering all 8 functions plus integration
+- Updated `src/main.py` — added `--evaluate` and `--labels` flags; existing modes unchanged
+- Updated `README.md` — Sprint 6 section with metric definitions and usage
+- Updated `docs/failure_cases.md` — evaluation failure cases
+
+### What I Learned
+- Labels must use the same key as the output's raw (not cleaned) `invoice_no` and `supplier_gstin` — `normalize_eval_key` handles case/hyphen differences at join time.
+- The duplicate row (INV-2024-001 in purchase register) shares a key with the matched row. Deduplicating actual on key before joining prevents a many-to-many expansion. The duplicate_in_purchase occurrence is intentionally not labeled (key ambiguity).
+- Reusing `calculate_itc_at_risk` from `report_writer` in `prepare_actual_results` ensures evaluation measures what the report actually shows — no silent divergence.
+- 100% accuracy on sample data confirms labels.csv was derived correctly from pipeline output. Future label sets from real CA data will show where the logic breaks.
+
+### What Remains Weak
+- Labels file is hand-authored — no tooling to help a CA mark correct outputs and save as labels.
+- Accuracy is aggregate only; no per-supplier or per-status breakdown.
+- No label versioning — if sample data changes, labels.csv must be updated manually.
+
+### Next Sprint
+**Sprint 7 — Streamlit Dashboard / UI**
+- Upload CSVs via browser, view exception report, step through CA review workflow
+- Or alternatively: per-supplier accuracy report + label management CLI
+
+---
+
 ## Sprint 4 — Excel Exception Report
 
 **Date:** 2026-05

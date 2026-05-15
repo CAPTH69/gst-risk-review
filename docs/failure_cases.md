@@ -95,13 +95,27 @@ The same policy applies to duplicate keys in GSTR-2B (`duplicate_in_gstr2b`).
 
 ---
 
-## Evaluation Failures
+## Evaluation Failures (Sprint 6)
 
+| Case | Handled? | Description |
+|---|---|---|
+| Missing labels file | ✓ | FileNotFoundError with readable path message |
+| Empty labels file | ✓ | ValueError — header-only CSV raises before evaluation starts |
+| Missing required label column | ✓ | ValueError listing all missing column names |
+| Label row not found in actual output | ✓ | actual fields = NaN; all correctness flags = False |
+| Expected status differs from actual | ✓ | status_correct = False; counted in status_accuracy denominator |
+| Expected risk level differs from actual | ✓ | risk_level_correct = False |
+| False positive exception | ✓ | expected_is_exception=False, actual=True; counted in false_positive_exceptions |
+| False negative exception | ✓ | expected_is_exception=True, actual=False; counted in false_negative_exceptions |
+| ITC at risk mismatch | ✓ | itc_at_risk_correct = False if abs diff > 0.01 |
+| Duplicate key in actual (same invoice_no + gstin) | ✓ | actual deduplicated keeping first; duplicate row not labeled |
+
+### What Is Not Covered Yet
 | Case | Description | Sprint |
 |---|---|---|
-| False positives in mismatch detection | Tool flags a match as a mismatch due to formatting | Sprint 4 |
-| Missing coverage metrics | No way to know what % of invoices were reconciled | Sprint 4 |
-| No audit trail | No record of what was flagged, reviewed, or overridden | Sprint 4 |
+| Label versioning | No way to know which pipeline version produced which labels | Sprint 7 |
+| Per-supplier accuracy breakdown | Overall accuracy hides supplier-level gaps | Sprint 7 |
+| Automatic label generation | Labels must be authored manually — no labeling UI | Sprint 7 |
 
 ---
 
