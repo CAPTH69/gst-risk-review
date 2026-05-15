@@ -1,0 +1,11 @@
+supplier_gstin,supplier_name,gstin_status,return_filing_status,risk_note
+27AABCU9603R1ZX,Reliable Traders,Active,Regular Filer,Low risk - consistent filer
+29AADCS5739H1ZK,Sunrise Supplies,Active,Regular Filer,Low risk - IGST supplier interstate
+07AAACR5055K1ZK,Royal Enterprises,Active,Regular Filer,Low risk
+27AABFT4321P1ZY,Metro Components,Active,Irregular Filer,Medium risk - missed 2 returns in past year
+33AACCP8765Q1ZM,Southern Parts,Active,Regular Filer,Low risk
+06AAACG3275M1ZR,Global Goods Ltd,Inactive,Non-Filer,HIGH RISK - GSTIN cancelled; ITC claim invalid
+19AACFK2341L1ZB,Eastern Traders,Active,Non-Filer,HIGH RISK - no returns filed in last 3 months
+36AABHP6543N1ZT,Pinnacle Vendors,Active,Regular Filer,Low risk
+24AACBL4321K1ZP,Blue Line Corp,Suspended,Non-Filer,HIGH RISK - GSTIN suspended
+11AACCM7654R1ZS,Mountain Merchants,Active,Irregular Filer,Medium risk - late filer
