@@ -109,13 +109,25 @@ The sample CSVs contain realistic but completely fake data. Built-in test cases 
 | Invoices in purchase register but NOT in GSTR-2B | INV-2024-013, INV-2024-018 |
 | Invoice in GSTR-2B but NOT in purchase register | INV-2024-020 |
 | Amount mismatch (same invoice, different values) | INV-2024-008 (₹90k in PR, ₹95k in GSTR-2B) |
-| Duplicate invoice in purchase register | INV-2024-001 appears twice |
+| Duplicate invoice in purchase register | INV-2024-001 appears twice — first occurrence reconciles normally, second is flagged `duplicate_in_purchase` |
 | Inactive supplier (ITC claim invalid) | Global Goods Ltd - GSTIN cancelled |
 | Non-filing supplier (ITC at risk) | Eastern Traders - no returns filed |
 
 ---
 
-## Next Sprint Preview: Sprint 2 — Data Cleaning + Invoice Matching
+## Duplicate Invoice Policy
+
+When the same `(supplier_gstin, invoice_no)` appears more than once in the purchase register:
+
+- The **first occurrence** enters normal reconciliation (matched / missing_in_2b / amount_mismatch)
+- Every **later occurrence** is flagged `duplicate_in_purchase` in the output
+- The corresponding GSTR-2B invoice is **not** classified as `extra_in_2b` — because the first purchase occurrence covers it
+
+This prevents a false alarm: a CA should see "you have a duplicate entry" — not "GSTR-2B has an unrecognised invoice."
+
+---
+
+## Next Sprint Preview: Sprint 3 — Supplier Risk Scoring
 
 Sprint 2 will:
 - Normalize invoice numbers and dates (handle whitespace, format differences)

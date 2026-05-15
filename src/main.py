@@ -1,13 +1,15 @@
 """
-main.py - Entry point for GST Risk Review Sprint 1.
+main.py - Entry point for GST Risk Review.
 
-Loads all three sample CSV files, validates their columns, and prints a summary.
-Run this to confirm the project is set up correctly.
+Loads all three sample CSV files, validates columns, cleans data,
+runs invoice reconciliation, and prints a summary.
 """
 
 from pathlib import Path
 from data_loader import load_purchase_register, load_gstr2b, load_supplier_master
 from validator import validate_purchase_register, validate_gstr2b, validate_supplier_master
+from cleaner import clean_purchase_register, clean_gstr2b
+from reconciler import reconcile_invoices
 
 
 # Paths to sample data files
@@ -19,7 +21,7 @@ SUPPLIER_MASTER_PATH = DATA_DIR / "sample_supplier_master.csv"
 
 
 def main():
-    print("=== GST Risk Review - Sprint 1 ===\n")
+    print("=== GST Risk Review - Sprint 2 ===\n")
 
     # Load all three files
     purchase_df = load_purchase_register(PURCHASE_REGISTER_PATH)
@@ -31,11 +33,23 @@ def main():
     validate_gstr2b(gstr2b_df)
     validate_supplier_master(supplier_df)
 
-    # Print summary
+    # Print load summary
     print(f"Purchase Register Loaded: {len(purchase_df)} rows")
     print(f"GSTR-2B Loaded: {len(gstr2b_df)} rows")
     print(f"Supplier Master Loaded: {len(supplier_df)} rows")
     print("\nValidation successful")
+
+    # Clean data (normalize invoice numbers, GSTINs, amounts)
+    purchase_df = clean_purchase_register(purchase_df)
+    gstr2b_df = clean_gstr2b(gstr2b_df)
+
+    # Reconcile purchase register against GSTR-2B
+    result_df = reconcile_invoices(purchase_df, gstr2b_df)
+
+    # Print reconciliation summary
+    print("\nReconciliation Summary:")
+    for status, count in result_df["status"].value_counts().items():
+        print(f"  {status}: {count}")
 
 
 if __name__ == "__main__":
