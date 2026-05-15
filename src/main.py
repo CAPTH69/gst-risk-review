@@ -11,10 +11,12 @@ from validator import validate_purchase_register, validate_gstr2b, validate_supp
 from cleaner import clean_purchase_register, clean_gstr2b
 from reconciler import reconcile_invoices
 from risk_scorer import add_supplier_risk
+from report_writer import prepare_exception_report, generate_report_filename, write_exception_report
 
 
 # Paths to sample data files
 DATA_DIR = Path(__file__).parent.parent / "data"
+REPORTS_DIR = Path(__file__).parent.parent / "reports"
 
 PURCHASE_REGISTER_PATH = DATA_DIR / "sample_purchase_register.csv"
 GSTR2B_PATH = DATA_DIR / "sample_gstr2b.csv"
@@ -22,7 +24,7 @@ SUPPLIER_MASTER_PATH = DATA_DIR / "sample_supplier_master.csv"
 
 
 def main():
-    print("=== GST Risk Review - Sprint 3 ===\n")
+    print("=== GST Risk Review - Sprint 4 ===\n")
 
     # Load all three files
     purchase_df = load_purchase_register(PURCHASE_REGISTER_PATH)
@@ -60,6 +62,13 @@ def main():
     for level in ["High", "Medium", "Low"]:
         count = (result_df["supplier_risk_level"] == level).sum()
         print(f"  {level}: {count}")
+
+    # Generate Excel exception report
+    report_df = prepare_exception_report(result_df)
+    report_path = REPORTS_DIR / generate_report_filename()
+    write_exception_report(report_df, report_path)
+    print(f"\nException report generated: {report_path}")
+    print(f"  Exception rows: {len(report_df)}")
 
 
 if __name__ == "__main__":
